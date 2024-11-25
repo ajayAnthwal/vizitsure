@@ -122,10 +122,9 @@ const dummyData = [
 export default function VisitorGatePass() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [filter, setFilter] = useState("all"); // Filter state
+  const [filter, setFilter] = useState("all");
   const rowsPerPage = 10;
 
-  // Filter visitors based on the selected filter
   const filteredData = dummyData
     .filter((item) => {
       if (filter === "checkedIn") {
@@ -135,7 +134,7 @@ export default function VisitorGatePass() {
       } else if (filter === "checkedOut") {
         return item.status === "Checked Out";
       }
-      return true; // Show all
+      return true;
     })
     .filter((item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -156,7 +155,6 @@ export default function VisitorGatePass() {
   return (
     <div className="md:h-[84.5vh] h-auto bg-gray-100 p-4 sm:p-6 flex items-center justify-center">
       <div className="container mx-auto bg-white shadow-md rounded-lg">
-        {/* Header with Filters */}
         <div className="flex flex-col sm:flex-row justify-between items-center p-4">
           <button className="bg-blue-500 text-white px-4 py-2 rounded-md mb-4 sm:mb-0">
             Create Gate Pass
@@ -186,19 +184,19 @@ export default function VisitorGatePass() {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
+          <table className="min-w-full table-auto border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2 text-left">
+                <th className="border border-gray-300 px-4 py-2 text-left text-sm sm:text-base">
                   Name
                 </th>
-                <th className="border border-gray-300 px-4 py-2 text-left">
+                <th className="border border-gray-300 px-4 py-2 text-left text-sm sm:text-base">
                   Status
                 </th>
-                <th className="border border-gray-300 px-4 py-2 text-left">
+                <th className="border border-gray-300 px-4 py-2 text-left text-sm sm:text-base">
                   Check-In
                 </th>
-                <th className="border border-gray-300 px-4 py-2 text-left">
+                <th className="border border-gray-300 px-4 py-2 text-left text-sm sm:text-base">
                   Check-Out
                 </th>
               </tr>
@@ -207,16 +205,16 @@ export default function VisitorGatePass() {
               {paginatedData.length > 0 ? (
                 paginatedData.map((item, index) => (
                   <tr key={index} className="even:bg-gray-100">
-                    <td className="border border-gray-300 px-4 py-2">
+                    <td className="border border-gray-300 px-4 py-2 text-sm sm:text-base">
                       {item.name}
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">
+                    <td className="border border-gray-300 px-4 py-2 text-sm sm:text-base">
                       {item.status}
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">
+                    <td className="border border-gray-300 px-4 py-2 text-sm sm:text-base">
                       {item.checkIn}
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">
+                    <td className="border border-gray-300 px-4 py-2 text-sm sm:text-base">
                       {item.checkOut || "N/A"}
                     </td>
                   </tr>
@@ -225,7 +223,7 @@ export default function VisitorGatePass() {
                 <tr>
                   <td
                     colSpan="4"
-                    className="border border-gray-300 px-4 py-2 text-center"
+                    className="border border-gray-300 px-4 py-2 text-center text-sm sm:text-base"
                   >
                     No Visits available
                   </td>
