@@ -20,8 +20,8 @@ export async function login(email, password) {
       const errorData = await response.json();
       return { success: false, message: errorData.message || "Login failed" };
     }
-
     const data = await response.json();
+    localStorage.setItem("auth", data.jwt);
     return { success: true, token: data.token };
   } catch (error) {
     return { success: false, message: "Network error" };
