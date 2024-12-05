@@ -1,17 +1,14 @@
-// src/components/AuthWrapper.js
-"use client";  // Ensure that this is a client-side component
+"use client";
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 const AuthWrapper = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const pathname = usePathname(); // Get the current route
+  const pathname = usePathname();
 
   useEffect(() => {
     const token = localStorage.getItem("auth");
-
-    // Redirect to login if no token and not already on the login page
     if (!token && pathname !== "/login") {
       window.location.href = "/login";
     } else {
@@ -20,11 +17,10 @@ const AuthWrapper = ({ children }) => {
   }, [pathname]);
 
   if (!isAuthenticated && pathname !== "/login") {
-    // Show a loading state while checking authentication
     return <div>Loading...</div>;
   }
 
-  return <>{children}</>; // Render the children (your main content)
+  return <>{children}</>;
 };
 
 export default AuthWrapper;
