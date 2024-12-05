@@ -26,10 +26,10 @@ export default function Login() {
   const onSubmit = async (data) => {
     setLoading(true);
 
-    const { email, password } = data;
+    const { mobileNumber, password } = data; // Use mobile number instead of email
 
     try {
-      const response = await login(email, password);
+      const response = await login(mobileNumber, password); // Send mobile number to API
       if (response.success) {
         toast.success("Login successful!");
         const token = localStorage.getItem("auth");
@@ -39,7 +39,7 @@ export default function Login() {
           }, 3000);
         }
       } else {
-        toast.error(response.message || "Invalid email or password.");
+        toast.error(response.message || "Invalid mobile number or password.");
       }
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
@@ -58,27 +58,27 @@ export default function Login() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label
-              htmlFor="email"
+              htmlFor="mobileNumber"
               className="block text-gray-700 font-medium mb-2"
             >
-              Email
+              Mobile Number
             </label>
             <input
-              type="email"
-              id="email"
-              placeholder="Enter your email"
+              type="text"
+              id="mobileNumber"
+              placeholder="Enter your mobile number"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-              {...register("email", {
-                required: "Email is required",
+              {...register("mobileNumber", {
+                required: "Mobile number is required",
                 pattern: {
-                  value: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-                  message: "Invalid email format",
+                  value: /^[0-9]{10}$/, // Validate mobile number format
+                  message: "Invalid mobile number format",
                 },
               })}
             />
-            {errors.email && (
+            {errors.mobileNumber && (
               <p className="text-red-500 text-sm mt-2">
-                {errors.email.message}
+                {errors.mobileNumber.message}
               </p>
             )}
           </div>
