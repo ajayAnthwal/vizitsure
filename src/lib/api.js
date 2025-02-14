@@ -41,12 +41,14 @@ export async function login(identifier, password) {
   }
 }
 
-// Fetch Visits Data Function
-export const fetchVisits = async () => {
+
+// Get Visit data
+export const fetchVisits = async (page = 1, itemsPerPage = 10) => {
   try {
     const response = await axiosInstance.get(
-      "/api/visits?sort[0]=createdAt:desc&pagination[pageSize]=100&populate=*&filters[createdAt][$gte]=2024-01-01"
+      `/api/visits?pagination[page]=${page}&pagination[pageSize]=${itemsPerPage}`
     );
+
     return response.data;
   } catch (error) {
     console.error("Error in fetching visits:", error);
