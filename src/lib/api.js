@@ -55,3 +55,20 @@ export const fetchVisits = async (page = 1, itemsPerPage = 10) => {
     throw error;
   }
 };
+
+
+
+// Create Gate Pass Function
+export const createGatePass = async (mobile) => {
+  try {
+    const response = await axiosInstance.get(
+      `/api/visitors?filters[mobile][$eq]=${mobile}`
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error in creating gate pass:", error);
+    throw error;
+  }
+};
+

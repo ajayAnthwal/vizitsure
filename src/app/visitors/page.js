@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 const rowsPerPage = 10;
 
@@ -93,9 +94,11 @@ export default function VisitorGatePass() {
     <div className="md:h-[84.5vh] h-auto bg-gray-100 p-4 sm:p-6 flex items-center justify-center">
       <div className="container mx-auto bg-white shadow-md rounded-lg">
         <div className="flex flex-col sm:flex-row justify-between items-center p-4">
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-md mb-4 sm:mb-0">
-            Create Gate Pass
-          </button>
+        <Link href="/creategatepass">
+        <button className="bg-blue-500 text-white px-4 py-2 rounded-md mb-4 sm:mb-0">
+          Create Gate Pass
+        </button>
+      </Link>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
             <select
               className="border border-gray-300 rounded-md px-4 py-2"
