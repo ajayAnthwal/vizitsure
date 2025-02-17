@@ -9,27 +9,33 @@ export default function Step2({ onPrev, onNext, visitorData }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
+  // Check if the visitor data contains a valid mobile number
+  const isValidMobile = (mobile) => {
+    return mobile && mobile.length === 10;  // Simple check for a 10-digit mobile number
+  };
+
   useEffect(() => {
-    if (!visitorData || Object.keys(visitorData).length === 0) {
+    if (!visitorData || !isValidMobile(visitorData.mobile)) {
+      // If no valid mobile number, reset all form fields to empty
       setValue("mobile", "");
       setValue("name", "");
       setValue("email", "");
       setValue("address", "");
       setValue("company", "");
+      setPreviewImage(null); // Clear the profile image if mobile is invalid
     } else {
       setValue("mobile", visitorData.mobile);
       setValue("name", visitorData.name);
       setValue("email", visitorData.email);
       setValue("address", visitorData.address);
       setValue("company", visitorData.company_name);
+      setPreviewImage(visitorData.profile?.data?.attributes?.url || null);
     }
   }, [visitorData, setValue]);
 
   useEffect(() => {
-    console.log("Visitor Data:", visitorData.company_name);
+    console.log("Visitor Data:", visitorData?.company_name);
   }, [visitorData]);
-
-  console.log("Company Name Debug:", visitorData.company_name);
 
   const startCamera = () => {
     setCameraActive(true);
@@ -78,9 +84,9 @@ export default function Step2({ onPrev, onNext, visitorData }) {
       </h2>
       <div className="text-center">
         <div className="relative w-40 h-40 mx-auto rounded-full border border-gray-300 overflow-hidden bg-gray-200 flex items-center justify-center">
-          {previewImage || visitorData.profile.data.attributes.url ? (
+          {previewImage ? (
             <img
-              src={previewImage || visitorData.profile.data.attributes.url}
+              src={previewImage}
               alt="Profile Preview"
               className="w-full h-full object-cover"
             />
@@ -131,7 +137,7 @@ export default function Step2({ onPrev, onNext, visitorData }) {
         <label className="block font-semibold mb-1">Mobile</label>
         <input
           type="text"
-          value={getValues("mobile") || visitorData?.mobile || "9898989898"}
+          value={getValues("mobile") || ""}
           disabled
           className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-500"
         />
@@ -142,7 +148,7 @@ export default function Step2({ onPrev, onNext, visitorData }) {
           type="text"
           placeholder="Name"
           {...register("name", { required: true })}
-          defaultValue={visitorData?.name}
+          defaultValue={visitorData?.name || ""}
           className="w-full border rounded px-3 py-2"
         />
       </div>
@@ -152,7 +158,7 @@ export default function Step2({ onPrev, onNext, visitorData }) {
           type="email"
           placeholder="Email"
           {...register("email", { required: true })}
-          defaultValue={visitorData?.email}
+          defaultValue={visitorData?.email || ""}
           className="w-full border rounded px-3 py-2"
         />
       </div>
@@ -162,7 +168,7 @@ export default function Step2({ onPrev, onNext, visitorData }) {
           type="text"
           placeholder="Address"
           {...register("address", { required: true })}
-          defaultValue={visitorData?.address}
+          defaultValue={visitorData?.address || ""}
           className="w-full border rounded px-3 py-2"
         />
       </div>

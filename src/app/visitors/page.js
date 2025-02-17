@@ -90,7 +90,7 @@ export default function VisitorGatePass() {
     <div className="md:h-[84.5vh] h-auto bg-gray-100 p-4 sm:p-6 flex items-center justify-center">
       <div className="container mx-auto bg-white shadow-md rounded-lg">
         <div className="flex flex-col sm:flex-row justify-between items-center p-4">
-          <Link href="/creategatepass">
+          <Link href="/visitor-gate-pass">
             <button className="bg-blue-500 text-white px-4 py-2 rounded-md mb-4 sm:mb-0">
               Create Gate Pass
             </button>

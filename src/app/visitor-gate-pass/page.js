@@ -30,18 +30,17 @@ export default function CreateVisitorGatePass() {
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    const savedData = JSON.parse(localStorage.getItem("visitorForm")) || {};
-    setFormData(savedData);
+    // No longer loading from localStorage
+    setFormData({});
+    methods.reset({}); // Reset the form to initial state
   }, []);
 
-  const saveToLocalStorage = (data) => {
-    const updatedData = { ...formData, ...data };
-    setFormData(updatedData);
-    localStorage.setItem("visitorForm", JSON.stringify(updatedData));
+  const saveData = (data) => {
+    setFormData(data);
   };
 
   const handleNext = (data) => {
-    saveToLocalStorage(data);
+    saveData(data); // Save data in state without localStorage
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -52,7 +51,6 @@ export default function CreateVisitorGatePass() {
   const handleConfirm = () => {
     console.log("Final Submitted Data:", formData);
     alert("Visitor Gate Pass Created Successfully!");
-    localStorage.removeItem("visitorForm");
   };
 
   return (
@@ -61,7 +59,11 @@ export default function CreateVisitorGatePass() {
         <div className="w-full max-w-md bg-white p-6 rounded shadow-lg">
           {currentStep === 1 && <Step1 onNext={handleNext} />}
           {currentStep === 2 && (
-            <Step2 onPrev={handlePrev} onNext={handleNext} visitorData={formData} />
+            <Step2
+              onPrev={handlePrev}
+              onNext={handleNext}
+              visitorData={formData}
+            />
           )}
           {currentStep === 3 && (
             <Step3 onPrev={handlePrev} onNext={handleNext} />
