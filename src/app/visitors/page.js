@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 const rowsPerPage = 10;
@@ -13,11 +13,8 @@ export default function VisitorGatePass() {
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, filter]);
-
-  const fetchData = async () => {
+  // Using useCallback to avoid unnecessary re-renders
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const authToken = localStorage.getItem("auth");
@@ -62,7 +59,11 @@ export default function VisitorGatePass() {
       console.error("Error fetching visits:", error);
     }
     setLoading(false);
-  };
+  }, [currentPage, filter]);
+
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, filter, fetchData]);
 
   const filteredData = visits
     .filter((item) => item.attributes?.visitor?.data?.attributes?.company_name) // Ensure company name exists
@@ -103,7 +104,7 @@ export default function VisitorGatePass() {
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             >
-              <option value="todayCheckIn">Today's Check-Ins</option>
+              <option value="todayCheckIn">Today&apos;s Check-Ins</option>
               <option value="approved">Approved Visitors</option>
               <option value="unapproved">Unapproved Visitors</option>
               <option value="checkedOut">Checked Out</option>
