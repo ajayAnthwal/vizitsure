@@ -62,7 +62,7 @@ export const fetchVisits = async (page = 1, itemsPerPage = 10) => {
 export const createGatePass = async (mobile) => {
   try {
     const response = await axiosInstance.get(
-      `/api/visitors?filters[mobile][$eq]=${mobile}`
+      `/api/visitors?filters[mobile][$eq]=${mobile}&populate=*`
     );
 
     return response.data;

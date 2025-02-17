@@ -25,16 +25,12 @@ export default function Step2({ onPrev, onNext }) {
   const capturePhoto = () => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
-
-    // Draw the current video frame onto the canvas
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Convert the canvas image to a data URL
     const imageDataUrl = canvas.toDataURL("image/png");
     setPreviewImage(imageDataUrl);
-    setValue("photo", imageDataUrl); // Save the image data URL in the form
+    setValue("photo", imageDataUrl);
     stopCamera();
   };
 
@@ -58,8 +54,6 @@ export default function Step2({ onPrev, onNext }) {
       <h2 className="text-2xl font-bold text-center mb-4">
         Create Visitor Gate Pass
       </h2>
-
-      {/* Live Camera and Preview */}
       <div className="text-center">
         <div className="relative w-40 h-40 mx-auto rounded-full border border-gray-300 overflow-hidden bg-gray-200 flex items-center justify-center">
           {previewImage ? (
@@ -111,8 +105,6 @@ export default function Step2({ onPrev, onNext }) {
           </div>
         )}
       </div>
-
-      {/* Mobile */}
       <div>
         <label className="block font-semibold mb-1">Mobile</label>
         <input
@@ -122,8 +114,6 @@ export default function Step2({ onPrev, onNext }) {
           className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-500"
         />
       </div>
-
-      {/* Name */}
       <div>
         <label className="block font-semibold mb-1">Name</label>
         <input
@@ -133,8 +123,6 @@ export default function Step2({ onPrev, onNext }) {
           className="w-full border rounded px-3 py-2"
         />
       </div>
-
-      {/* Email */}
       <div>
         <label className="block font-semibold mb-1">Email</label>
         <input
@@ -144,8 +132,6 @@ export default function Step2({ onPrev, onNext }) {
           className="w-full border rounded px-3 py-2"
         />
       </div>
-
-      {/* Address */}
       <div>
         <label className="block font-semibold mb-1">Address</label>
         <input
@@ -155,8 +141,6 @@ export default function Step2({ onPrev, onNext }) {
           className="w-full border rounded px-3 py-2"
         />
       </div>
-
-      {/* Company */}
       <div>
         <label className="block font-semibold mb-1">Company</label>
         <input
@@ -166,8 +150,6 @@ export default function Step2({ onPrev, onNext }) {
           className="w-full border rounded px-3 py-2"
         />
       </div>
-
-      {/* Buttons */}
       <div className="flex justify-between mt-4">
         <button
           type="button"
@@ -183,8 +165,6 @@ export default function Step2({ onPrev, onNext }) {
           Next
         </button>
       </div>
-
-      {/* Hidden Canvas for Capturing Photo */}
       <canvas ref={canvasRef} className="hidden"></canvas>
     </form>
   );

@@ -2,9 +2,10 @@
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { createGatePass } from "@/lib/api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Loader from "@/components/Loader";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function CreateGatePass() {
   const router = useRouter();
@@ -19,13 +20,15 @@ export default function CreateGatePass() {
       console.log("Fetching data for mobile:", data.mobile);
       const response = await createGatePass(data.mobile);
       console.log("Visitor Data:", response);
-
+  
       if (response?.data?.length > 0) {
-        setVisitorData(response.data[0]); 
+        setVisitorData(response.data[0].attributes);
         toast.success("Visitor found!");
       } else {
         toast.error("No visitor found, redirecting...");
-        router.push("/visitor-gate-pass");
+        setTimeout(() => {
+          router.push("/visitor-gate-pass");
+        }, 2000);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -74,15 +77,18 @@ export default function CreateGatePass() {
         {visitorData && (
           <div className="p-4 border border-gray-300 rounded-lg mt-4">
             <h3 className="text-lg font-semibold">Visitor Details</h3>
-            <p>
-              <strong>Name:</strong> {visitorData.name}
-            </p>
-            <p>
-              <strong>Mobile:</strong> {visitorData.mobile}
-            </p>
-            <p>
-              <strong>Visit Purpose:</strong> {visitorData.purpose}
-            </p>
+            {visitorData?.profile?.data?.attributes?.url && (
+              <img 
+                src={visitorData.profile.data.attributes.url} 
+                alt="Visitor Image" 
+                className="w-24 h-24 object-cover rounded-full mx-auto mb-4 border"
+              />
+            )}
+            <p><strong>Name:</strong> {visitorData.name || "N/A"}</p>
+            <p><strong>Email:</strong> {visitorData.email || "N/A"}</p>
+            <p><strong>Mobile:</strong> {visitorData.mobile || "N/A"}</p>
+            <p><strong>Address:</strong> {visitorData.address || "N/A"}</p>
+            <p><strong>Company:</strong> {visitorData.company?.company_name || "N/A"}</p>
           </div>
         )}
       </div>
