@@ -61,7 +61,7 @@ export default function CreateVisitorGatePass() {
         <div className="w-full max-w-md bg-white p-6 rounded shadow-lg">
           {currentStep === 1 && <Step1 onNext={handleNext} />}
           {currentStep === 2 && (
-            <Step2 onPrev={handlePrev} onNext={handleNext} />
+            <Step2 onPrev={handlePrev} onNext={handleNext} visitorData={formData} />
           )}
           {currentStep === 3 && (
             <Step3 onPrev={handlePrev} onNext={handleNext} />

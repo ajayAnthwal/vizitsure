@@ -1,13 +1,35 @@
 "use client";
 import { useFormContext } from "react-hook-form";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
-export default function Step2({ onPrev, onNext }) {
+export default function Step2({ onPrev, onNext, visitorData }) {
   const { register, handleSubmit, setValue, getValues } = useFormContext();
   const [cameraActive, setCameraActive] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!visitorData || Object.keys(visitorData).length === 0) {
+      setValue("mobile", "");
+      setValue("name", "");
+      setValue("email", "");
+      setValue("address", "");
+      setValue("company", "");
+    } else {
+      setValue("mobile", visitorData.mobile);
+      setValue("name", visitorData.name);
+      setValue("email", visitorData.email);
+      setValue("address", visitorData.address);
+      setValue("company", visitorData.company_name);
+    }
+  }, [visitorData, setValue]);
+
+  useEffect(() => {
+    console.log("Visitor Data:", visitorData.company_name);
+  }, [visitorData]);
+
+  console.log("Company Name Debug:", visitorData.company_name);
 
   const startCamera = () => {
     setCameraActive(true);
@@ -56,9 +78,9 @@ export default function Step2({ onPrev, onNext }) {
       </h2>
       <div className="text-center">
         <div className="relative w-40 h-40 mx-auto rounded-full border border-gray-300 overflow-hidden bg-gray-200 flex items-center justify-center">
-          {previewImage ? (
+          {previewImage || visitorData.profile.data.attributes.url ? (
             <img
-              src={previewImage}
+              src={previewImage || visitorData.profile.data.attributes.url}
               alt="Profile Preview"
               className="w-full h-full object-cover"
             />
@@ -109,7 +131,7 @@ export default function Step2({ onPrev, onNext }) {
         <label className="block font-semibold mb-1">Mobile</label>
         <input
           type="text"
-          value={getValues("mobile") || "9898989898"}
+          value={getValues("mobile") || visitorData?.mobile || "9898989898"}
           disabled
           className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-500"
         />
@@ -120,6 +142,7 @@ export default function Step2({ onPrev, onNext }) {
           type="text"
           placeholder="Name"
           {...register("name", { required: true })}
+          defaultValue={visitorData?.name}
           className="w-full border rounded px-3 py-2"
         />
       </div>
@@ -129,6 +152,7 @@ export default function Step2({ onPrev, onNext }) {
           type="email"
           placeholder="Email"
           {...register("email", { required: true })}
+          defaultValue={visitorData?.email}
           className="w-full border rounded px-3 py-2"
         />
       </div>
@@ -138,6 +162,7 @@ export default function Step2({ onPrev, onNext }) {
           type="text"
           placeholder="Address"
           {...register("address", { required: true })}
+          defaultValue={visitorData?.address}
           className="w-full border rounded px-3 py-2"
         />
       </div>
@@ -147,9 +172,11 @@ export default function Step2({ onPrev, onNext }) {
           type="text"
           placeholder="Company"
           {...register("company", { required: true })}
+          defaultValue={visitorData?.company_name || ""}
           className="w-full border rounded px-3 py-2"
         />
       </div>
+
       <div className="flex justify-between mt-4">
         <button
           type="button"

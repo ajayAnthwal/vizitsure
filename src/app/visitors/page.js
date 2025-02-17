@@ -3,17 +3,15 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 const rowsPerPage = 10;
-const todayDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+const todayDate = new Date().toISOString().split("T")[0];
 
 export default function VisitorGatePass() {
   const [visits, setVisits] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [filter, setFilter] = useState("todayCheckIn"); // Default: Today's Check-Ins
+  const [filter, setFilter] = useState("todayCheckIn");
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
-
-  // Using useCallback to avoid unnecessary re-renders
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -27,7 +25,6 @@ export default function VisitorGatePass() {
       let apiUrl = `https://www.vizitsure.com/gapi/api/visits?pagination[page]=${currentPage}&pagination[pageSize]=${rowsPerPage}&populate=*`;
 
       if (filter === "todayCheckIn") {
-        // Today's Check-Ins
         apiUrl += `&filters[status]=IN&filters[checkin][$gte]=${todayDate}`;
       } else if (filter === "approved") {
         apiUrl += `&filters[status]=APPROVED`;
@@ -66,7 +63,7 @@ export default function VisitorGatePass() {
   }, [currentPage, filter, fetchData]);
 
   const filteredData = visits
-    .filter((item) => item.attributes?.visitor?.data?.attributes?.company_name) // Ensure company name exists
+    .filter((item) => item.attributes?.visitor?.data?.attributes?.company_name)
     .map((item) => ({
       ...item,
       companyName:

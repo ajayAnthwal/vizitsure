@@ -1,12 +1,32 @@
 "use client";
 import { useFormContext } from "react-hook-form";
+import { useState } from "react";
+import { createGatePass } from "@/lib/api"; 
+import Loader from "@/components/Loader";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Step1({ onNext }) {
   const { register, watch, handleSubmit } = useFormContext();
+  const [loading, setLoading] = useState(false);
   const mobile = watch("mobile");
 
-  const onSubmit = (data) => {
-    onNext(data);
+  const onSubmit = async (data) => {
+    setLoading(true);
+    try {
+      console.log("Fetching data for mobile:", data.mobile);
+      const response = await createGatePass(data.mobile);
+      if (response?.data?.length > 0) {
+        onNext(response.data[0].attributes);
+      } else {
+        toast.error("No visitor found");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to fetch visitor data.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,14 +64,14 @@ export default function Step1({ onNext }) {
       )}
       <button
         type="submit"
-        disabled={mobile?.length !== 10}
+        disabled={mobile?.length !== 10 || loading}
         className={`w-full py-2 px-4 rounded-lg font-medium text-lg transition-all ${
           mobile?.length === 10
             ? "bg-[#565d6f] text-white hover:bg-blue-600 shadow-lg"
             : "bg-gray-300 text-gray-500 cursor-not-allowed"
         }`}
       >
-        Next
+        {loading ? <Loader /> : "Next"}
       </button>
     </form>
   );
