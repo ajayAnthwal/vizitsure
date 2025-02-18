@@ -36,7 +36,7 @@ export default function Login() {
         if (token) {
           setInterval(() => {
             window.location.href = "/";
-          }, 3000);
+          }, 1000);
         }
       } else {
         toast.error(response.message || "Invalid mobile number or password.");

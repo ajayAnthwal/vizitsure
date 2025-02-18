@@ -12,6 +12,8 @@ export default function VisitorGatePass() {
   const [filter, setFilter] = useState("todayCheckIn");
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedVisitor, setSelectedVisitor] = useState(null);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -25,13 +27,13 @@ export default function VisitorGatePass() {
       let apiUrl = `https://www.vizitsure.com/gapi/api/visits?pagination[page]=${currentPage}&pagination[pageSize]=${rowsPerPage}&populate=*`;
 
       if (filter === "todayCheckIn") {
-        apiUrl += `&filters[status]=IN&filters[checkin][$gte]=${todayDate}`;
+        apiUrl += `&filters[status]=IN&filters[checkin][$gte]=${todayDate}&filters[checkout][$gte]=${todayDate}`;
       } else if (filter === "approved") {
         apiUrl += `&filters[status]=APPROVED`;
       } else if (filter === "unapproved") {
         apiUrl += `&filters[status]=UNAPPROVED`;
       } else if (filter === "checkedOut") {
-        apiUrl += `&filters[status]=OUT`;
+        apiUrl += `&filters[status]=OUT&filters[checkout][$gte]=${todayDate}`;
       }
 
       console.log("Fetching from:", apiUrl);
@@ -123,18 +125,15 @@ export default function VisitorGatePass() {
             <table className="min-w-full table-auto border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-200">
-                  <th className="border border-gray-300 px-4 py-2 text-left">
+                  <th className="border border-gray-300 px-4 py-2">
                     Company Name
                   </th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
-                    Status
-                  </th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
-                    Check-In
-                  </th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
+                  <th className="border border-gray-300 px-4 py-2">Status</th>
+                  <th className="border border-gray-300 px-4 py-2">Check-In</th>
+                  <th className="border border-gray-300 px-4 py-2">
                     Check-Out
                   </th>
+                  <th className="border border-gray-300 px-4 py-2">View</th>
                 </tr>
               </thead>
               <tbody>
@@ -153,12 +152,20 @@ export default function VisitorGatePass() {
                       <td className="border border-gray-300 px-4 py-2">
                         {item.checkout}
                       </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <button
+                          className="bg-green-500 text-white px-3 py-1 rounded-md"
+                          onClick={() => setSelectedVisitor(item)}
+                        >
+                          View
+                        </button>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="5"
                       className="border border-gray-300 px-4 py-2 text-center"
                     >
                       No Visits available
@@ -169,27 +176,33 @@ export default function VisitorGatePass() {
             </table>
           )}
         </div>
+      </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center p-4">
-          <p className="text-sm mb-4 sm:mb-0">
-            Page {currentPage} / {totalPages}
-          </p>
-          <div className="flex items-center space-x-2">
+      {selectedVisitor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-bold mb-4">Visitor Details</h2>
+            <p>
+              <strong>Company:</strong> {selectedVisitor.companyName}
+            </p>
+            <p>
+              <strong>Status:</strong> {selectedVisitor.status}
+            </p>
+            <p>
+              <strong>Check-In:</strong> {selectedVisitor.checkin}
+            </p>
+            <p>
+              <strong>Check-Out:</strong> {selectedVisitor.checkout}
+            </p>
             <button
-              disabled={currentPage === 1}
-              onClick={() => handlePageChange(currentPage - 1)}
+              className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md"
+              onClick={() => setSelectedVisitor(null)}
             >
-              &lt;
-            </button>
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
-            >
-              &gt;
+              Close
             </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

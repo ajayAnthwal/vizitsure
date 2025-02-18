@@ -8,21 +8,18 @@ export default function Step2({ onPrev, onNext, visitorData }) {
   const [previewImage, setPreviewImage] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-
-  // Check if the visitor data contains a valid mobile number
   const isValidMobile = (mobile) => {
-    return mobile && mobile.length === 10;  // Simple check for a 10-digit mobile number
+    return mobile && mobile.length === 10;
   };
 
   useEffect(() => {
     if (!visitorData || !isValidMobile(visitorData.mobile)) {
-      // If no valid mobile number, reset all form fields to empty
       setValue("mobile", "");
       setValue("name", "");
       setValue("email", "");
       setValue("address", "");
       setValue("company", "");
-      setPreviewImage(null); // Clear the profile image if mobile is invalid
+      setPreviewImage(null);
     } else {
       setValue("mobile", visitorData.mobile);
       setValue("name", visitorData.name);
