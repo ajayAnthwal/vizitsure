@@ -72,3 +72,47 @@ export const createGatePass = async (mobile) => {
   }
 };
 
+// Create Visitors Function
+export const createVisitors = async (payload) => {
+  try {
+    const response = await axiosInstance.post(
+      `/api/visitors`, payload
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error in creating gate pass:", error);
+    return  error.response.data.message
+  }
+};
+
+
+// Create Visitor Document Function
+export const createVisitorDocument = async (payload) => {
+  try {
+    const response = await axiosInstance.post(
+      `/api/visitor-documents`, payload
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error in creating gate pass:", error);
+    return  error.response.data.message
+  }
+};
+
+
+// Upload Document Function
+export const uploadDocument = async (payload) => {
+  try {
+    const response = await axiosInstance.post(
+      `/api/upload`, payload
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error in creating gate pass:", error);
+    return  error.response.data.message
+  }
+};
+

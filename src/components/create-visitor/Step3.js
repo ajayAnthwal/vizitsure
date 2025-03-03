@@ -1,6 +1,7 @@
 "use client";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
+import { createVisitorDocument, uploadDocument } from "@/lib/api";
 
 export default function Step3({ onPrev, onNext }) {
   const { register, handleSubmit, setValue, getValues } = useFormContext();
@@ -27,7 +28,35 @@ export default function Step3({ onPrev, onNext }) {
     );
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = async(data) => {
+    const payload = {
+      data: {
+        visitor: JSON.parse(localStorage.getItem('visitorId')), // visitorId 
+        type: data.documentType,
+      }
+    }
+
+    //"message": "type must be one of the following values: profile, adhar, pan, license, id, misc,
+    console.log('zzzzzzzzzzzzz', data);
+    
+    const res = await createVisitorDocument(payload)
+    
+    let docId = res.data.id;
+    
+    if(res && res.data.id){ 
+
+      // TODO: upload document
+      const imageData = new FormData();
+      imageData.append("files", data.documents);
+      imageData.append("ref", "api::visitor-document.visitor-document");
+      imageData.append("refId", docId); // Replace with actual ID
+      if(data.photo){
+        imageData.append("field", data.photo); // profile photo file
+      }
+
+      let payload = {data: imageData}
+      const res = await uploadDocument(imageData)
+    }
     onNext(data);
   };
 
@@ -52,10 +81,10 @@ export default function Step3({ onPrev, onNext }) {
             <option value="" disabled>
               Select Document Type
             </option>
-            <option value="Aadhaar">Aadhaar</option>
-            <option value="PAN">PAN</option>
-            <option value="Voter ID">Voter ID</option>
-            <option value="Driving License">Driving License</option>
+            <option value="adhar">Aadhaar</option>
+            <option value="pan">PAN</option>
+            <option value="id">Voter ID</option>
+            <option value="license">Driving License</option>
             <option value="Passport">Passport</option>
           </select>
         </div>

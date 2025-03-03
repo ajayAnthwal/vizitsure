@@ -1,6 +1,7 @@
 "use client";
 import { useFormContext } from "react-hook-form";
 import { useState, useRef, useEffect } from "react";
+import { createVisitors } from "@/lib/api";
 
 export default function Step2({ onPrev, onNext, visitorData }) {
   const { register, handleSubmit, setValue, getValues } = useFormContext();
@@ -47,17 +48,43 @@ export default function Step2({ onPrev, onNext, visitorData }) {
       });
   };
 
+  // const capturePhoto = () => {
+  //   const canvas = canvasRef.current;
+  //   const video = videoRef.current;
+  //   canvas.width = video.videoWidth;
+  //   canvas.height = video.videoHeight;
+  //   canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+  //   const imageDataUrl = canvas.toDataURL("image/png");
+  //   setPreviewImage(imageDataUrl);
+  //   setValue("photo", imageDataUrl);
+  //   stopCamera();
+  // };
+
   const capturePhoto = () => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-    const imageDataUrl = canvas.toDataURL("image/png");
-    setPreviewImage(imageDataUrl);
-    setValue("photo", imageDataUrl);
+  
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+  
+      // Create a file from the blob
+      const file = new File([blob], `photo_${Date.now()}.png`, { type: "image/png" });
+  
+      // Set preview image
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewImage(imageUrl);
+  
+      // Update form state
+      const existingFiles = getValues("documents") || [];
+      setValue("photo", [...existingFiles, file]);
+    }, "image/png");
+  
     stopCamera();
   };
+  
 
   const stopCamera = () => {
     const stream = videoRef.current.srcObject;
@@ -67,8 +94,22 @@ export default function Step2({ onPrev, onNext, visitorData }) {
     setCameraActive(false);
   };
 
-  const onSubmit = (data) => {
-    onNext(data);
+  const onSubmit = async(data) => {
+    const payload = {
+      data: {
+        email: data.email,
+        name: data.mobile,
+        address: data.address,
+        company_name: data.company
+      }
+    }
+    const res = await createVisitors(payload);
+    
+    if(res.data.id){
+      localStorage.setItem("visitorId", res.data.id);
+      onNext(data);
+
+    }
   };
 
   return (
