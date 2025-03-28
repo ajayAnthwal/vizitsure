@@ -1,7 +1,7 @@
 "use client";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
-import { createGatePass } from "@/lib/api"; 
+import { createGatePass } from "@/lib/api";
 import Loader from "@/components/Loader";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -16,23 +16,20 @@ export default function Step1({ onNext }) {
     try {
       console.log("Fetching data for mobile:", data.mobile);
       const response = await createGatePass(data.mobile);
-      
+
       if (response?.data?.length > 0) {
         onNext(response.data[0].attributes);
       } else {
-        // Proceed to Step2 even if no visitor is found
-        onNext({ mobile: data.mobile });  // Passing only the mobile number to Step2 or other fallback data
+        onNext({ mobile: data.mobile });
       }
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to fetch visitor data.");
-      // Proceed to Step2 even if there's an error (you can pass any default data here)
       onNext({ mobile: data.mobile });
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <form

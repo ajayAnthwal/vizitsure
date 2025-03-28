@@ -1,6 +1,6 @@
 "use client";
 import { useFormContext } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createVisitorDocument, uploadDocument } from "@/lib/api";
 
 export default function Step3({ onPrev, onNext }) {
@@ -28,34 +28,39 @@ export default function Step3({ onPrev, onNext }) {
     );
   };
 
-  const onSubmit = async(data) => {
+  useEffect(() => {
+    const existingFiles = getValues("documents") || [];
+    const newImages = existingFiles.map((file) => ({
+      id: URL.createObjectURL(file),
+      file,
+    }));
+    setUploadedImages(newImages);
+  }, []);
+
+  const onSubmit = async (data) => {
     const payload = {
       data: {
-        visitor: JSON.parse(localStorage.getItem('visitorId')), // visitorId 
+        visitor: JSON.parse(localStorage.getItem("visitorId")),
         type: data.documentType,
-      }
-    }
+      },
+    };
+    console.log("11111zzzzzzzzzzzzz", data);
 
-    //"message": "type must be one of the following values: profile, adhar, pan, license, id, misc,
-    console.log('zzzzzzzzzzzzz', data);
-    
-    const res = await createVisitorDocument(payload)
-    
+    const res = await createVisitorDocument(payload);
+
     let docId = res.data.id;
-    
-    if(res && res.data.id){ 
 
-      // TODO: upload document
+    if (res && res.data.id) {
       const imageData = new FormData();
       imageData.append("files", data.documents);
       imageData.append("ref", "api::visitor-document.visitor-document");
-      imageData.append("refId", docId); // Replace with actual ID
-      if(data.photo){
-        imageData.append("field", data.photo); // profile photo file
+      imageData.append("refId", docId);
+      if (data.photo) {
+        imageData.append("field", data.photo);
       }
 
-      let payload = {data: imageData}
-      const res = await uploadDocument(imageData)
+      let payload = { data: imageData };
+      const res = await uploadDocument(imageData);
     }
     onNext(data);
   };

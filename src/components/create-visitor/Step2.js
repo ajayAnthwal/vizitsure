@@ -18,15 +18,29 @@ export default function Step2({ onPrev, onNext, visitorData }) {
       setValue("name", "");
       setValue("email", "");
       setValue("address", "");
-      setValue("company", "");
-      setPreviewImage(null);
+      setValue("company_name", "");
+      const existingPhoto = getValues("photo");
+      if (existingPhoto) {
+        const newImageUrl = URL.createObjectURL(existingPhoto);
+        setPreviewImage(newImageUrl);
+      } else {
+        setPreviewImage(null);
+      }
     } else {
       setValue("mobile", visitorData.mobile);
       setValue("name", visitorData.name);
       setValue("email", visitorData.email);
       setValue("address", visitorData.address);
-      setValue("company", visitorData.company_name);
-      setPreviewImage(visitorData.profile?.data?.attributes?.url || null);
+      setValue("company_name", visitorData.company_name);
+      const existingPhoto = getValues("photo");
+      if (existingPhoto) {
+        const newImageUrl = URL.createObjectURL(existingPhoto);
+        setPreviewImage(newImageUrl);
+      } else if (visitorData.profile?.data?.attributes?.url) {
+        setPreviewImage(visitorData.profile.data.attributes.url);
+      } else {
+        setPreviewImage(null);
+      }
     }
   }, [visitorData, setValue]);
 
@@ -208,8 +222,8 @@ export default function Step2({ onPrev, onNext, visitorData }) {
         <label className="block font-semibold mb-1">Company</label>
         <input
           type="text"
-          placeholder="Company"
-          {...register("company", { required: true })}
+          placeholder="Company Name"
+          {...register("company_name", { required: true })}
           defaultValue={visitorData?.company_name || ""}
           className="w-full border rounded px-3 py-2"
         />

@@ -1,6 +1,6 @@
 "use client";
 import { useFormContext } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FaUser,
   FaClipboardList,
@@ -8,13 +8,112 @@ import {
   FaUserTie,
   FaPrint,
   FaDownload,
+  FaCamera,
+  FaIdCard,
 } from "react-icons/fa";
 
 export default function Step5({ onPrev, onSubmit }) {
-  const { getValues } = useFormContext();
-  const formData = getValues();
+  const { getValues, setValue } = useFormContext();
+  const [formData, setFormData] = useState({});
   const [showGatePass, setShowGatePass] = useState(false);
   const [gatePassData, setGatePassData] = useState(null);
+  const [photoUrls, setPhotoUrls] = useState({
+    photo: null,
+    securitySignature: null,
+    visitorSignature: null,
+    visitedPersonSignature: null,
+    documents: [],
+  });
+  useEffect(() => {
+    const values = getValues();
+    setFormData(values);
+    createObjectURLs(values);
+  }, [getValues]);
+  const createObjectURLs = (data) => {
+    const urls = {
+      photo: null,
+      securitySignature: null,
+      visitorSignature: null,
+      visitedPersonSignature: null,
+      documents: [],
+    };
+    if (data.photo) {
+      if (typeof data.photo === "object") {
+        urls.photo = URL.createObjectURL(data.photo);
+      } else {
+        urls.photo = data.photo;
+      }
+    }
+    if (data.securitySignature) {
+      if (typeof data.securitySignature === "object") {
+        urls.securitySignature = URL.createObjectURL(data.securitySignature);
+      } else {
+        urls.securitySignature = data.securitySignature;
+      }
+    }
+
+    if (data.visitorSignature) {
+      if (typeof data.visitorSignature === "object") {
+        urls.visitorSignature = URL.createObjectURL(data.visitorSignature);
+      } else {
+        urls.visitorSignature = data.visitorSignature;
+      }
+    }
+
+    if (data.visitedPersonSignature) {
+      if (typeof data.visitedPersonSignature === "object") {
+        urls.visitedPersonSignature = URL.createObjectURL(
+          data.visitedPersonSignature
+        );
+      } else {
+        urls.visitedPersonSignature = data.visitedPersonSignature;
+      }
+    }
+    if (
+      data.documents &&
+      Array.isArray(data.documents) &&
+      data.documents.length > 0
+    ) {
+      urls.documents = data.documents.map((doc) => {
+        if (typeof doc === "object") {
+          return URL.createObjectURL(doc);
+        }
+        return doc;
+      });
+    }
+
+    setPhotoUrls(urls);
+  };
+  useEffect(() => {
+    return () => {
+      if (photoUrls.photo && photoUrls.photo.startsWith("blob:")) {
+        URL.revokeObjectURL(photoUrls.photo);
+      }
+      if (
+        photoUrls.securitySignature &&
+        photoUrls.securitySignature.startsWith("blob:")
+      ) {
+        URL.revokeObjectURL(photoUrls.securitySignature);
+      }
+      if (
+        photoUrls.visitorSignature &&
+        photoUrls.visitorSignature.startsWith("blob:")
+      ) {
+        URL.revokeObjectURL(photoUrls.visitorSignature);
+      }
+      if (
+        photoUrls.visitedPersonSignature &&
+        photoUrls.visitedPersonSignature.startsWith("blob:")
+      ) {
+        URL.revokeObjectURL(photoUrls.visitedPersonSignature);
+      }
+      photoUrls.documents.forEach((url) => {
+        if (url && url.startsWith("blob:")) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [photoUrls]);
 
   const handleFinalSubmit = () => {
     const gatePassInfo = {
@@ -23,7 +122,16 @@ export default function Step5({ onPrev, onSubmit }) {
       date: new Date().toISOString().replace("T", " ").substring(0, 19),
     };
     setGatePassData(gatePassInfo);
-    onSubmit(formData);
+    const dataToSubmit = {
+      ...formData,
+      photo: formData.photo,
+      securitySignature: formData.securitySignature,
+      visitorSignature: formData.visitorSignature,
+      visitedPersonSignature: formData.visitedPersonSignature,
+      documents: formData.documents,
+    };
+
+    onSubmit(dataToSubmit);
   };
 
   const handleViewGatePass = () => {
@@ -119,13 +227,9 @@ export default function Step5({ onPrev, onSubmit }) {
               </div>
             </div>
             <div className="w-32">
-              {formData.photo ? (
+              {photoUrls.photo ? (
                 <img
-                  src={
-                    typeof formData.photo === "object"
-                      ? URL.createObjectURL(formData.photo)
-                      : formData.photo
-                  }
+                  src={photoUrls.photo || "/placeholder.svg"}
                   alt="Visitor Photo"
                   className="w-32 h-32 object-cover rounded-full border-2 border-gray-300"
                 />
@@ -154,7 +258,10 @@ export default function Step5({ onPrev, onSubmit }) {
             <div className="mt-2">
               <span className="font-semibold">Visited Person</span>
               <span className="ml-2">
-                : {formData.visitedPerson || "Mr. Gaurav Singhwal"}
+                :{" "}
+                {formData.visitedPerson ||
+                  formData.staff ||
+                  "Mr. Gaurav Singhwal"}
               </span>
             </div>
           </div>
@@ -162,13 +269,9 @@ export default function Step5({ onPrev, onSubmit }) {
           <div className="flex justify-between mb-4">
             <div className="text-center w-1/3">
               <div className="h-20 mb-2">
-                {formData.securitySignature ? (
+                {photoUrls.securitySignature ? (
                   <img
-                    src={
-                      typeof formData.securitySignature === "object"
-                        ? URL.createObjectURL(formData.securitySignature)
-                        : formData.securitySignature
-                    }
+                    src={photoUrls.securitySignature || "/placeholder.svg"}
                     alt="Security Signature"
                     className="h-20 mx-auto object-contain"
                   />
@@ -180,13 +283,9 @@ export default function Step5({ onPrev, onSubmit }) {
             </div>
             <div className="text-center w-1/3">
               <div className="h-20 mb-2">
-                {formData.visitorSignature ? (
+                {photoUrls.visitorSignature ? (
                   <img
-                    src={
-                      typeof formData.visitorSignature === "object"
-                        ? URL.createObjectURL(formData.visitorSignature)
-                        : formData.visitorSignature
-                    }
+                    src={photoUrls.visitorSignature || "/placeholder.svg"}
                     alt="Visitor Signature"
                     className="h-20 mx-auto object-contain"
                   />
@@ -198,13 +297,9 @@ export default function Step5({ onPrev, onSubmit }) {
             </div>
             <div className="text-center w-1/3">
               <div className="h-20 mb-2">
-                {formData.visitedPersonSignature ? (
+                {photoUrls.visitedPersonSignature ? (
                   <img
-                    src={
-                      typeof formData.visitedPersonSignature === "object"
-                        ? URL.createObjectURL(formData.visitedPersonSignature)
-                        : formData.visitedPersonSignature
-                    }
+                    src={photoUrls.visitedPersonSignature || "/placeholder.svg"}
                     alt="Staff Signature"
                     className="h-20 mx-auto object-contain"
                   />
@@ -271,29 +366,31 @@ export default function Step5({ onPrev, onSubmit }) {
           <FaClipboardList className="mr-2 text-gray-600" /> Visit Details
         </h3>
         <p>
-          <strong>In Time:</strong> {formData.inTime}
+          <strong>Department:</strong> {formData.department || "N/A"}
         </p>
         <p>
-          <strong>Out Time:</strong> {formData.outTime}
+          <strong>In Time:</strong> {formData.inTime || "N/A"}
         </p>
         <p>
-          <strong>Visited Person:</strong> {formData.visitedPerson}
+          <strong>Out Time:</strong> {formData.outTime || "N/A"}
+        </p>
+        <p>
+          <strong>Visited Person:</strong>{" "}
+          {formData.visitedPerson || formData.staff || "N/A"}
         </p>
       </div>
       <div className="border rounded p-4 space-y-2">
-        <h3 className="text-lg font-medium">Signatures</h3>
+        <h3 className="text-lg font-medium flex items-center">
+          <FaIdCard className="mr-2 text-gray-600" /> Signatures
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <p>
               <strong>Security Signature:</strong>
             </p>
-            {formData.securitySignature ? (
+            {photoUrls.securitySignature ? (
               <img
-                src={
-                  typeof formData.securitySignature === "object"
-                    ? URL.createObjectURL(formData.securitySignature)
-                    : formData.securitySignature
-                }
+                src={photoUrls.securitySignature || "/placeholder.svg"}
                 alt="Security Signature"
                 className="w-32 h-32 object-cover"
               />
@@ -305,13 +402,9 @@ export default function Step5({ onPrev, onSubmit }) {
             <p>
               <strong>Visitor Signature:</strong>
             </p>
-            {formData.visitorSignature ? (
+            {photoUrls.visitorSignature ? (
               <img
-                src={
-                  typeof formData.visitorSignature === "object"
-                    ? URL.createObjectURL(formData.visitorSignature)
-                    : formData.visitorSignature
-                }
+                src={photoUrls.visitorSignature || "/placeholder.svg"}
                 alt="Visitor Signature"
                 className="w-32 h-32 object-cover"
               />
@@ -323,13 +416,9 @@ export default function Step5({ onPrev, onSubmit }) {
             <p>
               <strong>Person Visited Signature:</strong>
             </p>
-            {formData.visitedPersonSignature ? (
+            {photoUrls.visitedPersonSignature ? (
               <img
-                src={
-                  typeof formData.visitedPersonSignature === "object"
-                    ? URL.createObjectURL(formData.visitedPersonSignature)
-                    : formData.visitedPersonSignature
-                }
+                src={photoUrls.visitedPersonSignature || "/placeholder.svg"}
                 alt="Person Visited Signature"
                 className="w-32 h-32 object-cover"
               />
@@ -341,15 +430,11 @@ export default function Step5({ onPrev, onSubmit }) {
       </div>
       <div className="border rounded p-4">
         <h3 className="text-lg font-medium flex items-center">
-          <FaUser className="mr-2 text-gray-600" /> Photo
+          <FaCamera className="mr-2 text-gray-600" /> Photo
         </h3>
-        {formData.photo ? (
+        {photoUrls.photo ? (
           <img
-            src={
-              typeof formData.photo === "object"
-                ? URL.createObjectURL(formData.photo)
-                : formData.photo
-            }
+            src={photoUrls.photo || "/placeholder.svg"}
             alt="Uploaded Profile Photo"
             className="w-40 h-40 object-cover border"
           />
@@ -361,17 +446,18 @@ export default function Step5({ onPrev, onSubmit }) {
         <h3 className="text-lg font-medium flex items-center">
           <FaClipboardList className="mr-2 text-gray-600" /> Documents
         </h3>
-        {formData.documents && formData.documents.length > 0 ? (
+        {photoUrls.documents && photoUrls.documents.length > 0 ? (
           <div className="flex flex-wrap gap-4">
-            {formData.documents.map((doc, index) => (
+            {photoUrls.documents.map((docUrl, index) => (
               <div key={index} className="w-40 h-40 border relative">
                 <img
-                  src={typeof doc === "object" ? URL.createObjectURL(doc) : doc}
+                  src={docUrl || "/placeholder.svg"}
                   alt={`Uploaded Document ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
                 <span className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded">
                   {(formData.documentTypes && formData.documentTypes[index]) ||
+                    formData.documentType ||
                     "Document"}
                 </span>
               </div>
