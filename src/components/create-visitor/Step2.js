@@ -9,9 +9,8 @@ export default function Step2({ onPrev, onNext, visitorData }) {
   const [previewImage, setPreviewImage] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const isValidMobile = (mobile) => {
-    return mobile && mobile.length === 10;
-  };
+
+  const isValidMobile = (mobile) => mobile && mobile.length === 10;
 
   useEffect(() => {
     if (!visitorData || !isValidMobile(visitorData.mobile)) {
@@ -31,91 +30,85 @@ export default function Step2({ onPrev, onNext, visitorData }) {
     }
   }, [visitorData, setValue]);
 
-  useEffect(() => {
-    console.log("Visitor Data:", visitorData?.company_name);
-  }, [visitorData]);
-
-  const startCamera = () => {
-    setCameraActive(true);
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((stream) => {
+  const startCamera = async () => {
+    try {
+      setCameraActive(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      })
-      .catch((err) => {
-        console.error("Error accessing camera: ", err);
-      });
+        await videoRef.current.play();
+      }
+    } catch (err) {
+      console.error("Error accessing camera: ", err);
+    }
   };
-
-  // const capturePhoto = () => {
-  //   const canvas = canvasRef.current;
-  //   const video = videoRef.current;
-  //   canvas.width = video.videoWidth;
-  //   canvas.height = video.videoHeight;
-  //   canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-  //   const imageDataUrl = canvas.toDataURL("image/png");
-  //   setPreviewImage(imageDataUrl);
-  //   setValue("photo", imageDataUrl);
-  //   stopCamera();
-  // };
 
   const capturePhoto = () => {
-    const canvas = canvasRef.current;
-    const video = videoRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-  
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-  
-      // Create a file from the blob
-      const file = new File([blob], `photo_${Date.now()}.png`, { type: "image/png" });
-  
-      // Set preview image
-      const imageUrl = URL.createObjectURL(file);
-      setPreviewImage(imageUrl);
-  
-      // Update form state
-      const existingFiles = getValues("documents") || [];
-      setValue("photo", [...existingFiles, file]);
-    }, "image/png");
-  
-    stopCamera();
+    if (!videoRef.current || !canvasRef.current) {
+      console.error("Video or Canvas is not available");
+      return;
+    }
+
+    setTimeout(() => {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+
+      if (!video.srcObject) {
+        console.error("No video stream detected");
+        return;
+      }
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas
+        .getContext("2d")
+        .drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+
+        const file = new File([blob], `photo_${Date.now()}.png`, {
+          type: "image/png",
+        });
+
+        const imageUrl = URL.createObjectURL(file);
+        setPreviewImage(imageUrl);
+        setValue("photo", file);
+      }, "image/png");
+
+      stopCamera();
+    }, 500);
   };
-  
 
   const stopCamera = () => {
-    const stream = videoRef.current.srcObject;
-    const tracks = stream.getTracks();
-    tracks.forEach((track) => track.stop());
-    videoRef.current.srcObject = null;
+    if (videoRef.current?.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
     setCameraActive(false);
   };
 
-  const onSubmit = async(data) => {
+  const onSubmit = async (data) => {
     const payload = {
       data: {
         email: data.email,
         name: data.mobile,
         address: data.address,
-        company_name: data.company
-      }
-    }
+        company_name: data.company,
+      },
+    };
     const res = await createVisitors(payload);
-    
-    if(res.data.id){
+
+    if (res.data.id) {
       localStorage.setItem("visitorId", res.data.id);
       onNext(data);
-
     }
   };
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 px-4 py-6 bg-gray-50 rounded shadow-md "
+      className="space-y-6 px-4 py-6 bg-gray-50 rounded shadow-md"
     >
       <h2 className="text-2xl font-bold text-center mb-4">
         Create Visitor Gate Pass
@@ -138,7 +131,7 @@ export default function Step2({ onPrev, onNext, visitorData }) {
                   ref={videoRef}
                   className="w-full h-full object-cover"
                   autoPlay
-                ></video>
+                />
               )}
             </div>
           )}
@@ -171,6 +164,7 @@ export default function Step2({ onPrev, onNext, visitorData }) {
           </div>
         )}
       </div>
+
       <div>
         <label className="block font-semibold mb-1">Mobile</label>
         <input
