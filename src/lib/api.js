@@ -87,7 +87,35 @@ export const createVisitors = async (payload) => {
 };
 
 
-// Create Visitor Document Function
+export const uploadProfilePhoto = async (file, visitorId, companyId) => {
+  try {
+    const formData = new FormData();
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const formattedDate = `${year}_${month}`;
+    formData.append("files", file);
+    formData.append("ref", "api::visitor.visitor");
+    formData.append("refId", visitorId);
+    formData.append("field", "profile");
+    formData.append("path", `${companyId}/${visitorId}/${formattedDate}`);
+
+    const token = localStorage.getItem("token"); 
+
+    const response = await axiosInstance.post("/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`, 
+      },
+    });
+
+    return response.data[0]?.url || null; 
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
+    return null;
+  }
+};
+
 export const createVisitorDocument = async (payload) => {
   try {
     const response = await axiosInstance.post(

@@ -1,7 +1,7 @@
 "use client";
 import { useFormContext } from "react-hook-form";
 import { useState, useRef, useEffect } from "react";
-import { createVisitors } from "@/lib/api";
+import { createVisitors, uploadProfilePhoto } from "@/lib/api";
 
 export default function Step2({ onPrev, onNext, visitorData }) {
   const { register, handleSubmit, setValue, getValues } = useFormContext();
@@ -10,36 +10,16 @@ export default function Step2({ onPrev, onNext, visitorData }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  const isValidMobile = (mobile) => mobile && mobile.length === 10;
-
   useEffect(() => {
-    if (!visitorData || !isValidMobile(visitorData.mobile)) {
-      setValue("mobile", "");
-      setValue("name", "");
-      setValue("email", "");
-      setValue("address", "");
-      setValue("company_name", "");
-      const existingPhoto = getValues("photo");
-      if (existingPhoto) {
-        const newImageUrl = URL.createObjectURL(existingPhoto);
-        setPreviewImage(newImageUrl);
-      } else {
-        setPreviewImage(null);
-      }
-    } else {
+    if (visitorData?.mobile) {
       setValue("mobile", visitorData.mobile);
       setValue("name", visitorData.name);
       setValue("email", visitorData.email);
       setValue("address", visitorData.address);
       setValue("company_name", visitorData.company_name);
-      const existingPhoto = getValues("photo");
-      if (existingPhoto) {
-        const newImageUrl = URL.createObjectURL(existingPhoto);
-        setPreviewImage(newImageUrl);
-      } else if (visitorData.profile?.data?.attributes?.url) {
+
+      if (visitorData.profile?.data?.attributes?.url) {
         setPreviewImage(visitorData.profile.data.attributes.url);
-      } else {
-        setPreviewImage(null);
       }
     }
   }, [visitorData, setValue]);
@@ -48,30 +28,19 @@ export default function Step2({ onPrev, onNext, visitorData }) {
     try {
       setCameraActive(true);
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
     } catch (err) {
       console.error("Error accessing camera: ", err);
     }
   };
 
   const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) {
-      console.error("Video or Canvas is not available");
-      return;
-    }
+    if (!videoRef.current || !canvasRef.current) return;
 
     setTimeout(() => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-
-      if (!video.srcObject) {
-        console.error("No video stream detected");
-        return;
-      }
-
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       canvas
@@ -84,7 +53,6 @@ export default function Step2({ onPrev, onNext, visitorData }) {
         const file = new File([blob], `photo_${Date.now()}.png`, {
           type: "image/png",
         });
-
         const imageUrl = URL.createObjectURL(file);
         setPreviewImage(imageUrl);
         setValue("photo", file);
@@ -103,19 +71,40 @@ export default function Step2({ onPrev, onNext, visitorData }) {
   };
 
   const onSubmit = async (data) => {
-    const payload = {
-      data: {
-        email: data.email,
-        name: data.mobile,
-        address: data.address,
-        company_name: data.company,
-      },
-    };
-    const res = await createVisitors(payload);
-
-    if (res.data.id) {
-      localStorage.setItem("visitorId", res.data.id);
+    if (visitorData?.id) {
       onNext(data);
+      return;
+    }
+
+    try {
+      let photoUrl = "";
+      if (data.photo instanceof File) {
+        photoUrl = await uploadProfilePhoto(data.photo);
+        if (!photoUrl) {
+          console.error("Photo upload failed");
+          return;
+        }
+      }
+
+      const payload = {
+        data: {
+          email: data.email,
+          name: data.name,
+          address: data.address,
+          company_name: data.company_name,
+          photo: photoUrl || "",
+          mobile: data.mobile,
+        },
+      };
+
+      const res = await createVisitors(payload);
+
+      if (res?.id) {
+        localStorage.setItem("visitorId", res.id);
+      }
+      onNext(data);
+    } catch (error) {
+      console.error("Error in visitor creation:", error);
     }
   };
 
@@ -127,20 +116,20 @@ export default function Step2({ onPrev, onNext, visitorData }) {
       <h2 className="text-2xl font-bold text-center mb-4">
         Create Visitor Gate Pass
       </h2>
+
       <div className="text-center">
         <div className="relative w-40 h-40 mx-auto rounded-full border border-gray-300 overflow-hidden bg-gray-200 flex items-center justify-center">
           {previewImage ? (
             <img
-              src={previewImage}
+              src={previewImage || "/placeholder.svg"}
               alt="Profile Preview"
               className="w-full h-full object-cover"
             />
           ) : (
             <div>
-              {!cameraActive && (
+              {!cameraActive ? (
                 <span className="text-gray-500">No Image Captured</span>
-              )}
-              {cameraActive && (
+              ) : (
                 <video
                   ref={videoRef}
                   className="w-full h-full object-cover"
@@ -194,7 +183,6 @@ export default function Step2({ onPrev, onNext, visitorData }) {
           type="text"
           placeholder="Name"
           {...register("name", { required: true })}
-          defaultValue={visitorData?.name || ""}
           className="w-full border rounded px-3 py-2"
         />
       </div>
@@ -204,7 +192,6 @@ export default function Step2({ onPrev, onNext, visitorData }) {
           type="email"
           placeholder="Email"
           {...register("email", { required: true })}
-          defaultValue={visitorData?.email || ""}
           className="w-full border rounded px-3 py-2"
         />
       </div>
@@ -214,7 +201,6 @@ export default function Step2({ onPrev, onNext, visitorData }) {
           type="text"
           placeholder="Address"
           {...register("address", { required: true })}
-          defaultValue={visitorData?.address || ""}
           className="w-full border rounded px-3 py-2"
         />
       </div>
@@ -224,7 +210,6 @@ export default function Step2({ onPrev, onNext, visitorData }) {
           type="text"
           placeholder="Company Name"
           {...register("company_name", { required: true })}
-          defaultValue={visitorData?.company_name || ""}
           className="w-full border rounded px-3 py-2"
         />
       </div>
@@ -244,6 +229,7 @@ export default function Step2({ onPrev, onNext, visitorData }) {
           Next
         </button>
       </div>
+
       <canvas ref={canvasRef} className="hidden"></canvas>
     </form>
   );
